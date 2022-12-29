@@ -1,0 +1,40 @@
+1. 성별에 따른 이용건수 
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select sex,sum(useint) from cycle
+group by sex;
+2. 연령대별 이용건수
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select AGE,sum(useint) from cycle
+group by AGE;
+3. 대여소별 묶어서 이용건수 높은 순서대로
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select rentno,rent,sum(useint) from cycle
+group by rentno,rent
+order by sum(useint) desc
+limit 10;
+4. 연령대별 이용시간
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select age,avg(MINUTE) from cycle
+group by AGE;
+5. 성별에 따른 이용시간
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select sex,avg(MINUTE) from cycle
+group by sex;
+6. 대여구분코드별 이용건수
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select code,sum(useint) from cycle
+group by code;
+7. 대여구분코드별 이용시간
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select code,avg(MINUTE) from cycle
+group by code;
+8. 대여구분코드별 성별과 연령대별 count
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select code,sex,age,count(*) as cnt                         
+from cycle                                                  
+group by code,sex,age;
+9. 월별 총 이요건수, 운동량, 탄소량, 이동거리, 이용시간
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select month,sum(useint),avg(move),avg(tanso),avg(dist),avg(minute)                      
+from cycle                                                  
+group by month;

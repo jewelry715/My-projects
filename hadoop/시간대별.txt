@@ -1,0 +1,81 @@
+create table rent(
+MonthDate STRING,
+RENTtime STRING,
+RENTno STRING,
+rentname STRING,
+CODE STRING,    
+SEX STRING,
+AGE STRING,    
+USEINT STRING,
+MOVE STRING,
+TANSO STRING,
+DIST STRING,
+MINUTE STRING)
+PARTITIONED BY (MONTH INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+load data local inpath '서울특별시_공공자전거_이용정보(시간대별)_2105.csv'
+overwrite into table rent
+partition(MONTH=5);
+load data local inpath '서울특별시_공공자전거_이용정보(시간대별)_2106.csv'
+overwrite into table rent
+partition(MONTH=6);
+
+1.대여시간대 이용건수
+select renttime,sum(useint) from rent group by renttime;
+2.연령대
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select renttime,age,count(*) from rent group by renttime,sex;
+3.
+select renttime,avg(move),avg(tanso),avg(dist),avg(minute)                      
+from rent                                               
+group by renttime;
+4.
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select renttime,rentname,count(*) as a from rent group by renttime,rentname;
+order by a desc limit 10;
+
+SELECT regexp_replace(monthdate,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"','')),'yyyy-mm-dd E') 
+from rent limit 10;
+
+#대여시간, 요일, 이용건수
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+SELECT regexp_replace(renttime,'"',''),
+from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E'),
+sum(regexp_replace(useint,'"',''))
+from rent
+group by regexp_replace(renttime,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E');
+
+
+group by regexp_replace(renttime,'"',''),
+from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E');
+
+#평균이용시간
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+SELECT regexp_replace(renttime,'"',''),
+from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E'),
+avg(regexp_replace(MOVE,'"','')),avg(regexp_replace(tanso,'"','')),avg(regexp_replace(dist,'"','')),avg(regexp_replace(MINUTE,'"',''))
+from rent
+group by regexp_replace(renttime,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E');
+
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+SELECT rentno,rentname,
+from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E'),
+count(*)
+from rent
+group by rentno,rentname,from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'E');
+
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+select regexp_replace(renttime,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'u'), rentno, rentname, count(*)
+from rent
+group by regexp_replace(renttime,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'u'),rentno, rentname;
+
+insert overwrite local directory  '/home/hadoop/hdfs/q_rlt' 
+SELECT regexp_replace(renttime,'"',''),
+from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'u'),
+age,
+sum(regexp_replace(useint,'"',''))
+from rent
+group by regexp_replace(renttime,'"',''),from_unixtime(unix_timestamp(regexp_replace(monthdate,'"',''),'yyyy-MM-dd'),'u'),age;
